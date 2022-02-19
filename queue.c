@@ -17,7 +17,11 @@
  */
 struct list_head *q_new()
 {
-    return NULL;
+    struct list_head *head = malloc(sizeof(struct list_head));
+    if (!head)
+        return NULL;
+    INIT_LIST_HEAD(head);
+    return head;
 }
 
 /* Free all storage used by queue */
@@ -32,6 +36,24 @@ void q_free(struct list_head *l) {}
  */
 bool q_insert_head(struct list_head *head, char *s)
 {
+    if (!head) {
+        printf("The add node is NULL.\n");
+        return false;
+    }
+    element_t *ele = malloc(sizeof(element_t));
+    if (!ele) {
+        printf("locate element mem fail.\n");
+        return false;
+    }
+    struct list_head *ele_list = &ele->list;
+
+    ele->value = strdup(s);
+    if (!ele->value) {
+        printf("allocate the element value mem fail.");
+        free(ele);
+        return false;
+    }
+    list_add(ele_list, head);
     return true;
 }
 
@@ -44,6 +66,24 @@ bool q_insert_head(struct list_head *head, char *s)
  */
 bool q_insert_tail(struct list_head *head, char *s)
 {
+    if (!head) {
+        printf("The add node is NULL.\n");
+        return false;
+    }
+    element_t *ele = malloc(sizeof(element_t));
+    if (!ele) {
+        printf("allocate element mem fail.\n");
+        return false;
+    }
+    struct list_head *ele_list = &ele->list;
+
+    ele->value = strdup(s);
+    if (!ele->value) {
+        printf("allocate the element value mem fail.");
+        free(ele);
+        return false;
+    }
+    list_add_tail(ele_list, head);
     return true;
 }
 
