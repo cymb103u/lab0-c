@@ -25,7 +25,22 @@ struct list_head *q_new()
 }
 
 /* Free all storage used by queue */
-void q_free(struct list_head *l) {}
+void q_free(struct list_head *l)
+{
+    /**
+     * we want to free the queue, so list nodes would be deleted.
+     * we can use this marco "list_for_each_safe" in list.h to
+     * make sure that this node would be removed safely.
+     */
+    struct list_head *head = l;
+    struct list_head *node, *safe;
+    list_for_each_safe (node, safe, head) {
+        list_del(node);
+        element_t *ele = container_of(node, element_t, list);
+        q_release_element(ele);
+    }
+    free(head);
+}
 
 /*
  * Attempt to insert element at head of queue.
@@ -36,24 +51,6 @@ void q_free(struct list_head *l) {}
  */
 bool q_insert_head(struct list_head *head, char *s)
 {
-    if (!head) {
-        printf("The add node is NULL.\n");
-        return false;
-    }
-    element_t *ele = malloc(sizeof(element_t));
-    if (!ele) {
-        printf("locate element mem fail.\n");
-        return false;
-    }
-    struct list_head *ele_list = &ele->list;
-
-    ele->value = strdup(s);
-    if (!ele->value) {
-        printf("allocate the element value mem fail.");
-        free(ele);
-        return false;
-    }
-    list_add(ele_list, head);
     return true;
 }
 
@@ -66,24 +63,6 @@ bool q_insert_head(struct list_head *head, char *s)
  */
 bool q_insert_tail(struct list_head *head, char *s)
 {
-    if (!head) {
-        printf("The add node is NULL.\n");
-        return false;
-    }
-    element_t *ele = malloc(sizeof(element_t));
-    if (!ele) {
-        printf("allocate element mem fail.\n");
-        return false;
-    }
-    struct list_head *ele_list = &ele->list;
-
-    ele->value = strdup(s);
-    if (!ele->value) {
-        printf("allocate the element value mem fail.");
-        free(ele);
-        return false;
-    }
-    list_add_tail(ele_list, head);
     return true;
 }
 
@@ -103,7 +82,25 @@ bool q_insert_tail(struct list_head *head, char *s)
  */
 element_t *q_remove_head(struct list_head *head, char *sp, size_t bufsize)
 {
-    return NULL;
+    if (list_empty(head))
+        return NULL;
+    struct list_head *next = head->next;
+    element_t *ele = container_of(next, element_t, list);
+    list_del(next);
+    // if sp is non-NULL (handling)
+    if (sp) {
+        int len;
+        for (len = 0; *(ele->value + len); len++)
+            ;
+        if (len > bufsize) {
+            strncpy(sp, ele->value, bufsize - 1);
+            sp[bufsize - 1] = '\0';
+        } else {
+            strncpy(sp, ele->value, len);
+            sp[len] = '\0';
+        }
+    }
+    return ele;
 }
 
 /*
@@ -112,7 +109,24 @@ element_t *q_remove_head(struct list_head *head, char *sp, size_t bufsize)
  */
 element_t *q_remove_tail(struct list_head *head, char *sp, size_t bufsize)
 {
-    return NULL;
+    if (list_empty(head))
+        return NULL;
+    struct list_head *prev = head->prev;
+    element_t *ele = container_of(prev, element_t, list);
+    list_del(prev);
+    if (sp) {
+        int len;
+        for (len = 0; *(ele->value + len); len++)
+            ;
+        if (len > bufsize) {
+            strncpy(sp, ele->value, bufsize - 1);
+            sp[bufsize - 1] = '\0';
+        } else {
+            strncpy(sp, ele->value, len);
+            sp[len] = '\0';
+        }
+    }
+    return ele;
 }
 
 /*
