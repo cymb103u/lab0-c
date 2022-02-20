@@ -3,6 +3,8 @@ CFLAGS = -O1 -g -Wall -Werror -Idudect -I.
 
 GIT_HOOKS := .git/hooks/applied
 DUT_DIR := dudect
+
+DEBUG_INFO = yes
 all: $(GIT_HOOKS) qtest
 
 tid := 0
@@ -23,6 +25,11 @@ else
     VECHO = @printf
 endif
 
+
+ifeq ("$(DEBUG_INFO)","yes")
+    # https://github.com/google/sanitizers/wiki/AddressSanitizerFlags
+    CFLAGS += -DDEBUG
+endif
 # Enable sanitizer(s) or not
 ifeq ("$(SANITIZER)","1")
     # https://github.com/google/sanitizers/wiki/AddressSanitizerFlags

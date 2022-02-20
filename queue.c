@@ -52,19 +52,25 @@ void q_free(struct list_head *l)
 bool q_insert_head(struct list_head *head, char *s)
 {
     if (!head) {
+#if DEBUG
         printf("The add node is NULL.\n");
+#endif
         return false;
     }
     element_t *ele = malloc(sizeof(element_t));
     if (!ele) {
+#if DEBUG
         printf("locate element mem fail.\n");
+#endif
         return false;
     }
     struct list_head *ele_list = &ele->list;
 
     ele->value = strdup(s);
     if (!ele->value) {
+#if DEBUG
         printf("allocate the element value mem fail.");
+#endif
         free(ele);
         return false;
     }
@@ -82,19 +88,25 @@ bool q_insert_head(struct list_head *head, char *s)
 bool q_insert_tail(struct list_head *head, char *s)
 {
     if (!head) {
+#if DEBUG
         printf("The add node is NULL.\n");
+#endif
         return false;
     }
     element_t *ele = malloc(sizeof(element_t));
     if (!ele) {
+#if DEBUG
         printf("allocate element mem fail.\n");
+#endif
         return false;
     }
     struct list_head *ele_list = &ele->list;
 
     ele->value = strdup(s);
     if (!ele->value) {
+#if DEBUG
         printf("allocate the element value mem fail.");
+#endif
         free(ele);
         return false;
     }
@@ -201,6 +213,19 @@ int q_size(struct list_head *head)
 bool q_delete_mid(struct list_head *head)
 {
     // https://leetcode.com/problems/delete-the-middle-node-of-a-linked-list/
+    if (!head)
+        return false;
+    struct list_head *slow, *fast;
+    for (slow = head->next, fast = head->next->next;
+         fast != head && fast->next != head;
+         slow = slow->next, fast = fast->next->next)
+        ;
+    element_t *ele_mid = container_of(slow, element_t, list);
+#if DEBUG
+    printf("The mid element value is %s\n", ele_mid->value);
+#endif
+    list_del(slow);
+    q_release_element(ele_mid);
     return true;
 }
 
