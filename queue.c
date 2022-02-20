@@ -32,6 +32,8 @@ void q_free(struct list_head *l)
      * we can use this marco "list_for_each_safe" in list.h to
      * make sure that this node would be removed safely.
      */
+    if (!l)
+        return;
     struct list_head *head = l;
     struct list_head *node, *safe;
     list_for_each_safe (node, safe, head) {
@@ -241,6 +243,21 @@ bool q_delete_mid(struct list_head *head)
 bool q_delete_dup(struct list_head *head)
 {
     // https://leetcode.com/problems/remove-duplicates-from-sorted-list-ii/
+    if (list_empty(head))
+        return false;
+    struct list_head *node;
+    list_for_each (node, head) {
+        struct list_head *next = node->next;
+        element_t *ele_node = container_of(node, element_t, list);
+        for (struct list_head *safe = next->next; next != head;
+             next = safe, safe = next->next) {
+            element_t *ele_next = container_of(next, element_t, list);
+            if (!strcmp(ele_node->value, ele_next->value)) {
+                list_del(next);
+                q_release_element(ele_next);
+            }
+        }
+    }
     return true;
 }
 
