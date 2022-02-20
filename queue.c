@@ -55,7 +55,7 @@ bool q_insert_head(struct list_head *head, char *s)
 {
     if (!head) {
 #if DEBUG
-        printf("The add node is NULL.\n");
+        printf("The head is NULL.\n");
 #endif
         return false;
     }
@@ -91,7 +91,7 @@ bool q_insert_tail(struct list_head *head, char *s)
 {
     if (!head) {
 #if DEBUG
-        printf("The add node is NULL.\n");
+        printf("The head is NULL.\n");
 #endif
         return false;
     }
@@ -132,7 +132,7 @@ bool q_insert_tail(struct list_head *head, char *s)
  */
 element_t *q_remove_head(struct list_head *head, char *sp, size_t bufsize)
 {
-    if (list_empty(head))
+    if (!head || list_empty(head))
         return NULL;
     struct list_head *next = head->next;
     element_t *ele = container_of(next, element_t, list);
@@ -159,7 +159,7 @@ element_t *q_remove_head(struct list_head *head, char *sp, size_t bufsize)
  */
 element_t *q_remove_tail(struct list_head *head, char *sp, size_t bufsize)
 {
-    if (list_empty(head))
+    if (!head || list_empty(head))
         return NULL;
     struct list_head *prev = head->prev;
     element_t *ele = container_of(prev, element_t, list);
@@ -292,9 +292,9 @@ void q_swap(struct list_head *head)
  */
 void q_reverse(struct list_head *head)
 {
-    if (list_empty(head)) {
+    if (!head || list_empty(head)) {
 #if DEBUG
-        printf("the list is empty./n");
+        printf("the head is NULL or the list is empty./n");
 #endif
         return;
     }
@@ -309,4 +309,42 @@ void q_reverse(struct list_head *head)
  * No effect if q is NULL or empty. In addition, if q has only one
  * element, do nothing.
  */
-void q_sort(struct list_head *head) {}
+void q_sort(struct list_head *head)
+{
+    if (!head || list_empty(head) || list_is_singular(head))
+        return;
+
+    // split
+    struct list_head *slow, *fast;
+    for (slow = head->next, fast = head->next->next;
+         fast != head && fast->next != head;
+         slow = slow->next, fast = fast->next->next)
+        ;
+
+    LIST_HEAD(left);
+    LIST_HEAD(right);
+    list_cut_position(&left, head, slow);
+    // check node is odd or even
+    fast = fast != head ? fast : fast->prev;
+    list_cut_position(&right, head, fast);
+    q_sort(&left);
+    q_sort(&right);
+    // Merge
+    while (!list_empty(&left) && !list_empty(&right)) {
+        struct list_head *l = left.next, *r = right.next;
+        element_t *ele_l = container_of(l, element_t, list);
+        element_t *ele_r = container_of(r, element_t, list);
+        // strcmp  1: str1 > str2, 0: equal, -1: str1 < str2
+        if (strcmp(ele_l->value, ele_r->value) <= 0) {
+            list_del(l);
+            list_add_tail(l, head);
+        } else {
+            list_del(r);
+            list_add_tail(r, head);
+        }
+    }
+    if (!list_empty(&left))
+        list_splice_tail(&left, head);
+    if (!list_empty(&right))
+        list_splice_tail(&right, head);
+}
