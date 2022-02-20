@@ -259,7 +259,19 @@ void q_swap(struct list_head *head)
  * (e.g., by calling q_insert_head, q_insert_tail, or q_remove_head).
  * It should rearrange the existing ones.
  */
-void q_reverse(struct list_head *head) {}
+void q_reverse(struct list_head *head)
+{
+    if (list_empty(head)) {
+#if DEBUG
+        printf("the list is empty./n");
+#endif
+        return;
+    }
+    struct list_head *node, *safe;
+    list_for_each_safe (node, safe, head) {
+        list_move(node, head);
+    }
+}
 
 /*
  * Sort elements of queue in ascending order
